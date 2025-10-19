@@ -1,0 +1,39 @@
+diff --git a/xcomp/erl-xcomp-arm64-ios.conf b/xcomp/erl-xcomp-arm64-ios.conf
+index 4a98b7dc4b..81783dedb1 100644
+--- a/xcomp/erl-xcomp-arm64-ios.conf
++++ b/xcomp/erl-xcomp-arm64-ios.conf
+@@ -121,7 +121,7 @@ LDFLAGS="-L$XCOMP_SDKROOT/usr/lib/ -lc++ -v"
+ ## *NOTE*! Either set all or none of the `DED_LD*' variables.
+ 
+ # * `DED_LD' - Linker for Dynamically loaded Erlang Drivers.
+-DED_LD=$LD
++DED_LD="xcrun -sdk $XCOMP_SDK cc $XCOMP_ARCH"
+ 
+ # * `DED_LDFLAGS' - Linker flags to use with `DED_LD'.
+ DED_LDFLAGS="-L$XCOMP_SDKROOT/usr/lib/ -r -v"
+diff --git a/xcomp/erl-xcomp-arm64-iossimulator.conf b/xcomp/erl-xcomp-arm64-iossimulator.conf
+index 666155dcbd..7b0c33b544 100644
+--- a/xcomp/erl-xcomp-arm64-iossimulator.conf
++++ b/xcomp/erl-xcomp-arm64-iossimulator.conf
+@@ -121,7 +121,7 @@ LDFLAGS="-L$XCOMP_SDKROOT/usr/lib/ -lc++ -v"
+ ## *NOTE*! Either set all or none of the `DED_LD*' variables.
+ 
+ # * `DED_LD' - Linker for Dynamically loaded Erlang Drivers.
+-DED_LD=$LD
++DED_LD="xcrun -sdk $XCOMP_SDK cc $XCOMP_ARCH"
+ 
+ # * `DED_LDFLAGS' - Linker flags to use with `DED_LD'.
+ DED_LDFLAGS="-L$XCOMP_SDKROOT/usr/lib/ -r -v"
+diff --git a/xcomp/erl-xcomp-x86_64-iossimulator.conf b/xcomp/erl-xcomp-x86_64-iossimulator.conf
+index 0232003966..48771a862a 100644
+--- a/xcomp/erl-xcomp-x86_64-iossimulator.conf
++++ b/xcomp/erl-xcomp-x86_64-iossimulator.conf
+@@ -121,7 +121,7 @@ LDFLAGS="-L$XCOMP_SDKROOT/usr/lib/ -lc++ -v"
+ ## *NOTE*! Either set all or none of the `DED_LD*' variables.
+ 
+ # * `DED_LD' - Linker for Dynamically loaded Erlang Drivers.
+-DED_LD=$LD
++DED_LD="xcrun -sdk $XCOMP_SDK cc $XCOMP_ARCH"
+ 
+ # * `DED_LDFLAGS' - Linker flags to use with `DED_LD'.
+ DED_LDFLAGS="-L$XCOMP_SDKROOT/usr/lib/ -r -v"

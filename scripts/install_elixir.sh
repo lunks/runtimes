@@ -1,5 +1,5 @@
 #!/bin/bash
-VERSION=1.16.3
+VERSION=${ELIXIR_VERSION:-1.19.0}
 set -e
 
 mkdir $1

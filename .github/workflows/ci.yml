@@ -1,47 +1,60 @@
 name: "CI"
 on: ["push", "pull_request"]
 env:
-  OTP_TAG: OTP-26.2.5.6
   OTP_SOURCE: https://github.com/erlang/otp
 
 jobs:
   build:
-    name: "Build Android runtimes"
+    name: "Build Android ${{ matrix.arch }} - OTP ${{ matrix.otp_version }}"
     runs-on: "ubuntu-latest"
     strategy:
       matrix:
         arch: ["arm", "arm64", "x86_64"]
+        otp_version: ["28.1", "27.3"]
+        elixir_version: ["1.19.0", "1.18.0"]
+        exclude:
+          # Exclude incompatible combinations
+          - otp_version: "27.3"
+            elixir_version: "1.19.0"
     steps:
     - name: Setup elixir
       uses: erlef/setup-beam@v1
       with:
-        otp-version: 26.2.5.6
-        elixir-version: 1.16.3
+        otp-version: ${{ matrix.otp_version }}
+        elixir-version: ${{ matrix.elixir_version }}
 
     - uses: actions/checkout@v4
 
     - run: |
-        scripts/install_elixir.sh "$HOME/elixir"
+        ELIXIR_VERSION=${{ matrix.elixir_version }} scripts/install_elixir.sh "$HOME/elixir"
         echo "$HOME/elixir/bin" >> $GITHUB_PATH
 
     - name: Build Android ${{ matrix.arch }} runtimes
       run: |
         mix deps.get
-        ARCH=${{ matrix.arch }} mix package.android.runtime
+        ARCH=${{ matrix.arch }} OTP_TAG=OTP-${{ matrix.otp_version }} ELIXIR_VERSION=${{ matrix.elixir_version }} mix package.android.runtime
     - name: Archive Android runtimes
       uses: actions/upload-artifact@v4
       with:
-        name: ${{ matrix.arch }}-runtime
-        path: _build/*.zip
+        name: android-${{ matrix.arch }}-otp${{ matrix.otp_version }}-elixir${{ matrix.elixir_version }}
+        path: _build/android-runtime-otp*.zip
     - name: Android ${{ matrix.arch }} release
       uses: softprops/action-gh-release@v1
       if: startsWith(github.ref, 'refs/tags/')
       with:
-        files: _build/*.zip
+        files: _build/android-runtime-otp*.zip
 
   ios:
-    name: "Build iOS runtime"
+    name: "Build iOS - OTP ${{ matrix.otp_version }}"
     runs-on: "macos-latest"
+    strategy:
+      matrix:
+        otp_version: ["28.1", "27.3"]
+        elixir_version: ["1.19.0", "1.18.0"]
+        exclude:
+          # Exclude incompatible combinations
+          - otp_version: "27.3"
+            elixir_version: "1.19.0"
     steps:
     - run: brew install git carthage coreutils
     - uses: actions/checkout@v4
@@ -52,23 +65,23 @@ jobs:
         . $HOME/.asdf/asdf.sh
         asdf plugin add erlang
         asdf plugin add elixir
-        echo "erlang 26.2.5.6" >> .tool-versions
-        echo "elixir 1.16.3-otp-24" >> .tool-versions
+        echo "erlang ${{ matrix.otp_version }}" >> .tool-versions
+        echo "elixir ${{ matrix.elixir_version }}-otp-$(echo ${{ matrix.otp_version }} | cut -d. -f1)" >> .tool-versions
         asdf install
 
     - name: Build runtime
       run:  |
         . $HOME/.asdf/asdf.sh
-        mix package.ios.runtime
+        OTP_TAG=OTP-${{ matrix.otp_version }} ELIXIR_VERSION=${{ matrix.elixir_version }} mix package.ios.runtime
 
     - name: Archive runtimes
       uses: actions/upload-artifact@v4
       with:
-        name: iOS-runtime
-        path: _build/liberlang.xcframework
-        
+        name: ios-otp${{ matrix.otp_version }}-elixir${{ matrix.elixir_version }}
+        path: _build/liberlang-otp*.xcframework
+
     - name: iOS release
       uses: softprops/action-gh-release@v1
       if: startsWith(github.ref, 'refs/tags/')
       with:
-        files: _build/liberlang.xcframework
+        files: _build/liberlang-otp*.xcframework

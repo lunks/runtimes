@@ -46,6 +46,16 @@ defmodule Mix.Tasks.Package.Ios.Runtime do
       if !File.exists?(otp_target(arch)) do
         Runtimes.ensure_otp()
         cmd(~w(git clone _build/otp #{otp_target(arch)}))
+
+        # Apply iOS-specific patch (fixes DED_LD linker issues)
+        # Upstream OTP uses DED_LD=$LD (raw linker) in iOS xcomp configs.
+        # Modern Xcode toolchains pass -fstack-protector-strong which ld doesn't understand.
+        # This patch changes DED_LD to use 'xcrun cc' (compiler frontend) instead.
+        # Verified needed for OTP 26.2.5.6, 27.3, and 28.1.
+        patch_file = Path.absname("patch/otp-ios-ded-ld-fix.patch")
+        if File.exists?(patch_file) do
+          cmd("cd #{otp_target(arch)} && git apply #{patch_file}")
+        end
       end
 
       env = [
@@ -178,7 +188,15 @@ defmodule Mix.Tasks.Package.Ios.Runtime do
       (lipo(sims) ++ lipo(reals))
       |> Enum.map(fn lib -> "-library #{lib}" end)
 
-    framework = "./_build/liberlang.xcframework"
+    # Extract OTP major version for framework name (e.g., "OTP-28.1" -> "otp28")
+    otp_tag = Runtimes.otp_tag()
+    otp_version =
+      case Regex.run(~r/OTP-(\d+)/, otp_tag) do
+        [_, major] -> "otp#{major}"
+        _ -> "otp"
+      end
+
+    framework = "./_build/liberlang-#{otp_version}.xcframework"
 
     if File.exists?(framework) do
       File.rm_rf!(framework)

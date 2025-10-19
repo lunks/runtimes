@@ -212,10 +212,19 @@ defmodule Mix.Tasks.Package.Android.Runtime do
         {~c"#{android_type}/liberlang.a", File.read!(path)}
       end)
 
-    {:ok, _} = :zip.create(~c"_build/android-runtime.zip", files_for_zip)
+    # Extract OTP major version for zip name (e.g., "OTP-28.1" -> "otp28")
+    otp_tag = Runtimes.otp_tag()
+    otp_version =
+      case Regex.run(~r/OTP-(\d+)/, otp_tag) do
+        [_, major] -> "otp#{major}"
+        _ -> "otp"
+      end
+
+    zip_name = ~c"_build/android-runtime-#{otp_version}.zip"
+    {:ok, _} = :zip.create(zip_name, files_for_zip)
 
     Mix.shell().info(
-      "Created android-runtime.zip with libraries for targets: #{inspect(targets)}"
+      "Created android-runtime-#{otp_version}.zip with libraries for targets: #{inspect(targets)}"
     )
   end
 end

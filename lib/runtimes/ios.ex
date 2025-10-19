@@ -2,17 +2,8 @@ defmodule Runtimes.Ios do
   import Runtimes
 
   def architectures() do
-    # Not sure if we still need arm-32 at all https://blakespot.com/ios_device_specifications_grid.html
+    # armv7 (32-bit) removed - not supported in modern iOS SDKs (iOS 11+ requires 64-bit)
     %{
-      "ios" => %{
-        arch: "armv7",
-        id: "ios",
-        sdk: "iphoneos",
-        openssl_arch: "ios-xcrun",
-        xcomp: "arm-ios",
-        name: "arm-apple-ios",
-        cflags: "-mios-version-min=7.0.0 -fno-common -Os -D__IOS__=yes"
-      },
       "ios-arm64" => %{
         arch: "arm64",
         id: "ios64",
