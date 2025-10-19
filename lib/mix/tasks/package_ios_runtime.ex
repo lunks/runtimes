@@ -79,6 +79,7 @@ defmodule Mix.Tasks.Package.Ios.Runtime do
           ./otp_build setup
           --with-ssl=#{openssl_target(arch)}
           --disable-dynamic-ssl-lib
+          --enable-builtin-zlib
           --xcomp-conf=xcomp/erl-xcomp-#{arch.xcomp}.conf
           --enable-static-nifs=#{Enum.join(nifs, ",")}
         ),
@@ -113,6 +114,7 @@ defmodule Mix.Tasks.Package.Ios.Runtime do
           cd #{otp_target(arch)} && ./otp_build configure
           --with-ssl=#{openssl_target(arch)}
           --disable-dynamic-ssl-lib
+          --enable-builtin-zlib
           --xcomp-conf=xcomp/erl-xcomp-#{arch.xcomp}.conf
           --enable-static-nifs=#{Enum.join(nifs, ",")}
         ),
