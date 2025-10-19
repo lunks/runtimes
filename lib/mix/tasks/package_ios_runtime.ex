@@ -47,14 +47,26 @@ defmodule Mix.Tasks.Package.Ios.Runtime do
         Runtimes.ensure_otp()
         cmd(~w(git clone _build/otp #{otp_target(arch)}))
 
-        # Apply iOS-specific patch (fixes DED_LD linker issues)
+        # Apply iOS-specific patches
+
+        # Patch 1: DED_LD linker fix
         # Upstream OTP uses DED_LD=$LD (raw linker) in iOS xcomp configs.
         # Modern Xcode toolchains pass -fstack-protector-strong which ld doesn't understand.
         # This patch changes DED_LD to use 'xcrun cc' (compiler frontend) instead.
         # Verified needed for OTP 26.2.5.6, 27.3, and 28.1.
-        patch_file = Path.absname("patch/otp-ios-ded-ld-fix.patch")
-        if File.exists?(patch_file) do
-          cmd("cd #{otp_target(arch)} && git apply #{patch_file}")
+        ded_ld_patch = Path.absname("patch/otp-ios-ded-ld-fix.patch")
+        if File.exists?(ded_ld_patch) do
+          cmd("cd #{otp_target(arch)} && git apply #{ded_ld_patch}")
+        end
+
+        # Patch 2: zlib fdopen macro fix
+        # OTP's embedded zlib defines fdopen as a macro which conflicts with iOS 18.5 SDK.
+        # The macro `#define fdopen(fd,mode) NULL` collides with system fdopen() declaration.
+        # This patch prevents the macro definition on Apple platforms.
+        # Verified needed for iOS SDK 18.5+ (Xcode 16.4+) with OTP 26.2.5.6, 27.3, and 28.1.
+        zlib_patch = Path.absname("patch/otp-ios-zlib-fdopen-fix.patch")
+        if File.exists?(zlib_patch) do
+          cmd("cd #{otp_target(arch)} && git apply #{zlib_patch}")
         end
       end
 
@@ -79,7 +91,6 @@ defmodule Mix.Tasks.Package.Ios.Runtime do
           ./otp_build setup
           --with-ssl=#{openssl_target(arch)}
           --disable-dynamic-ssl-lib
-          --enable-builtin-zlib
           --xcomp-conf=xcomp/erl-xcomp-#{arch.xcomp}.conf
           --enable-static-nifs=#{Enum.join(nifs, ",")}
         ),
@@ -114,7 +125,6 @@ defmodule Mix.Tasks.Package.Ios.Runtime do
           cd #{otp_target(arch)} && ./otp_build configure
           --with-ssl=#{openssl_target(arch)}
           --disable-dynamic-ssl-lib
-          --enable-builtin-zlib
           --xcomp-conf=xcomp/erl-xcomp-#{arch.xcomp}.conf
           --enable-static-nifs=#{Enum.join(nifs, ",")}
         ),

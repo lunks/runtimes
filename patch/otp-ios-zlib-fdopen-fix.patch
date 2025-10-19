@@ -1,0 +1,13 @@
+diff --git a/erts/emulator/zlib/zutil.h b/erts/emulator/zlib/zutil.h
+index 1234567890..abcdef1234 100644
+--- a/erts/emulator/zlib/zutil.h
++++ b/erts/emulator/zlib/zutil.h
+@@ -144,7 +144,7 @@
+ #    if defined(__MWERKS__) && __dest_os != __be_os && __dest_os != __win32_os
+ #      include <unix.h> /* for fdopen */
+ #    else
+-#      ifndef fdopen
++#      if !defined(fdopen) && !defined(__APPLE__)
+ #        define fdopen(fd,mode) NULL /* No fdopen() */
+ #      endif
+ #    endif
