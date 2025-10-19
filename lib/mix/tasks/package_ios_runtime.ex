@@ -207,11 +207,11 @@ defmodule Mix.Tasks.Package.Ios.Runtime do
       (lipo(sims) ++ lipo(reals))
       |> Enum.map(fn lib -> "-library #{lib}" end)
 
-    # Extract OTP major version for framework name (e.g., "OTP-28.1" -> "otp28")
+    # Extract OTP major version for framework name (e.g., "OTP-28.1" -> "otp-28")
     otp_tag = Runtimes.otp_tag()
     otp_version =
       case Regex.run(~r/OTP-(\d+)/, otp_tag) do
-        [_, major] -> "otp#{major}"
+        [_, major] -> "otp-#{major}"
         _ -> "otp"
       end
 

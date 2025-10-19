@@ -44,8 +44,7 @@ defmodule Runtimes.Ios do
 
   def lipo(more) do
     File.mkdir_p!("tmp")
-    x = System.unique_integer([:positive])
-    tmp = "tmp/#{x}-liberlang.a"
+    tmp = "tmp/liberlang.a"
     if File.exists?(tmp), do: File.rm!(tmp)
     cmd("lipo -create #{Enum.join(more, " ")} -output #{tmp}")
     [tmp]
