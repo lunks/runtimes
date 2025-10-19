@@ -60,18 +60,13 @@ jobs:
     - uses: actions/checkout@v4
 
     - name: Setup elixir
-      run: |
-        git clone https://github.com/asdf-vm/asdf.git ~/.asdf
-        . $HOME/.asdf/asdf.sh
-        asdf plugin add erlang
-        asdf plugin add elixir
-        echo "erlang ${{ matrix.otp_version }}" >> .tool-versions
-        echo "elixir ${{ matrix.elixir_version }}-otp-$(echo ${{ matrix.otp_version }} | cut -d. -f1)" >> .tool-versions
-        asdf install
+      uses: erlef/setup-beam@v1
+      with:
+        otp-version: ${{ matrix.otp_version }}
+        elixir-version: ${{ matrix.elixir_version }}
 
     - name: Build runtime
       run:  |
-        . $HOME/.asdf/asdf.sh
         OTP_TAG=OTP-${{ matrix.otp_version }} ELIXIR_VERSION=${{ matrix.elixir_version }} mix package.ios.runtime
 
     - name: Archive runtimes
