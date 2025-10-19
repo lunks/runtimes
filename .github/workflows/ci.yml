@@ -3,10 +3,11 @@ on: ["push", "pull_request"]
 
 jobs:
   ios:
-    name: "Build iOS - OTP ${{ matrix.otp_version }}"
+    name: "Build iOS - OTP ${{ matrix.otp }}"
     runs-on: "macos-latest"
     strategy:
       matrix:
+        otp: ["26", "27", "28"]
         elixir: ["1.19.0"]
     steps:
     - run: brew install git carthage coreutils
@@ -16,6 +17,7 @@ jobs:
       uses: erlef/setup-beam@v1
       with:
         elixir-version: ${{ matrix.elixir }}
+        otp-version: ${{ matrix.otp }}
 
     - name: Build runtime
       run:  |
