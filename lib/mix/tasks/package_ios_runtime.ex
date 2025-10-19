@@ -59,14 +59,21 @@ defmodule Mix.Tasks.Package.Ios.Runtime do
           cmd("cd #{otp_target(arch)} && git apply #{ded_ld_patch}")
         end
 
-        # Patch 2: zlib fdopen macro fix
+        # Patch 2: zlib fdopen macro fix (OTP 26 and 27 only)
         # OTP's embedded zlib defines fdopen as a macro which conflicts with iOS 18.5 SDK.
         # The macro `#define fdopen(fd,mode) NULL` collides with system fdopen() declaration.
         # This patch prevents the macro definition on Apple platforms.
-        # Verified needed for iOS SDK 18.5+ (Xcode 16.4+) with OTP 26.2.5.6, 27.3, and 28.1.
+        # Note: OTP 28+ uses a newer zlib version without this issue, so patch only applies to OTP 26/27.
         zlib_patch = Path.absname("patch/otp-ios-zlib-fdopen-fix.patch")
         if File.exists?(zlib_patch) do
-          cmd("cd #{otp_target(arch)} && git apply #{zlib_patch}")
+          # Check if patch applies before attempting (OTP 28+ doesn't need it)
+          case System.cmd("sh", ["-c", "cd #{otp_target(arch)} && git apply --check #{zlib_patch}"], stderr_to_stdout: true) do
+            {_, 0} ->
+              IO.puts("Applying zlib fdopen patch...")
+              cmd("cd #{otp_target(arch)} && git apply #{zlib_patch}")
+            {_, _} ->
+              IO.puts("Skipping zlib fdopen patch (not needed for this OTP version)")
+          end
         end
       end
 
