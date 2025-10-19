@@ -12,9 +12,7 @@ jobs:
     steps:
     - run: brew install git carthage coreutils
     - uses: actions/checkout@v5
-
-    - name: Setup elixir
-      uses: erlef/setup-beam@v1
+    - uses: erlef/setup-beam@v1
       with:
         elixir-version: ${{ matrix.elixir }}
         otp-version: ${{ matrix.otp }}
